@@ -15,7 +15,7 @@ class NodeService {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545";
 
-  final String _privateKey = "ec754553254fd6b9bcfa929e27d378b648b4ac8adf926b0663e41e13c03c174d";
+  final String _privateKey = "3d789a56b97933f50f9ea622a0ea95982823b2dcb6f248b58b5aff3872f247e7";
 
   late Web3Client _client;
   late String _abiCode;
@@ -98,8 +98,15 @@ class NodeService {
     return result;
   }
   Future<void> getUserName()async {
-var res= await ask("getUserName", []);
-print(res);
+    var res= await ask("getUserName", []);
+    print(res);
   }
-
+  Future<void> addTempShareHolder(String shareHolder)async{
+    var res= await callFunction("addTemporaryShareHolders", [EthereumAddress.fromHex("0x7400cC042F87Acb0CbC973C9655F986DCD72B869")], _privateKey);
+    print(res);
+  }
+  Future<void> setEmail(String email)async{
+    var res= await callFunction("setEmail", [email], _privateKey);
+    print(res);
+  }
 }

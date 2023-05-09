@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
           child: Column(
             children: [
               Text("Page loaded"),
-              IconButton(onPressed: ()=>{ns.getUserName()}, icon: Icon(Icons.face_rounded))
+              IconButton(onPressed: ()=>{ns.setEmail("shareHolder")}, icon: Icon(Icons.face_rounded))
             ],
           ),
         ),
