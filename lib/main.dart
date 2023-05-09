@@ -1,43 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:bip39/bip39.dart' as bip39;
+import 'package:http/http.dart';
+import 'package:pheonix/screens/home.dart';
+import 'package:pheonix/services/nodeService.dart';
+import 'package:pheonix/services/publicContractService.dart';
+import 'package:pheonix/services/testServiceTwo.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:dart_bip32_bip44/dart_bip32_bip44.dart';
+import 'package:web3dart/web3dart.dart';
 Future<void> main() async{
-  String randomMnemonic = bip39.generateMnemonic();
-  // print(randomMnemonic);
-  String seed = bip39.mnemonicToSeedHex(randomMnemonic);
-  print("Seed : "+seed.toString());
-  // bool isValid = bip39.validateMnemonic(mnemonic);
-  // print(isValid);
-  // isValid = bip39.validateMnemonic('basket actual');
-  // print(isValid);
-  String entropy = bip39.mnemonicToEntropy(randomMnemonic);
-  print("Entropy : "+entropy.toString());
-  String mnemonic = bip39.entropyToMnemonic(entropy);
-  print("Mnemonic Phase: "+mnemonic);
-  String mnemonic_regenerated = bip39.entropyToMnemonic(entropy);
-  // print(mnemonic_regenerated);
-
-  // Chain chain = Chain.seed(hex.encode(utf8.encode(seed)));
-  Chain chain = Chain.seed(seed);
-  // var key_1 = chain.forPath('m/0/100') as ExtendedPrivateKey;
-
-  ExtendedKey key = chain.forPath("m/44'/60'/0'/0/0");
-  String privateKey=key.privateKeyHex().toString().substring(2);
-  print("Private Key; "+privateKey);
-  Credentials credentials = EthPrivateKey.fromHex(key.privateKeyHex()); //web3dart
-  var address = await credentials.extractAddress(); //web3dart
-  print("Public key: "+address.toString());
-
-
-
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+
   const MyApp({super.key});
 
 
@@ -45,6 +24,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    TestServiceTwo testTwo=new TestServiceTwo();
+    PublicContract pc=new PublicContract();
+    NodeService ns=new NodeService();
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -59,7 +41,17 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const Text( 'Flutter Demo Home Page'),
+      home:Scaffold(
+        body: Container(
+          child: Column(
+            children: [
+              Text("Page loaded"),
+              IconButton(onPressed: ()=>{ns.init()}, icon: Icon(Icons.face_rounded))
+            ],
+          ),
+        ),
+      ),
+
     );
   }
 }
