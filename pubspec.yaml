@@ -43,6 +43,7 @@ dependencies:
   provider: ^5.0.0
   http: ^0.13.3
   shared_preferences: ^2.1.0
+  flutter_js: ^0.6.0
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +73,7 @@ flutter:
     - contracts/build/contracts/Node.json
     - contracts/build/contracts/PublicContract.json
     - assets/abi_node.json
+    - assets/deployContract.js
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
