@@ -53,7 +53,7 @@ class NodeService {
     var jsonAbi = jsonDecode(abiStringFile);
     _abiCode = jsonEncode(jsonAbi['abi']);
     // _contractAddress = EthereumAddress.fromHex(jsonAbi["networks"]["421613"]["address"]);
-    _contractAddress=EthereumAddress.fromHex("0x02b7adC4f71B5475Ec124dbf9A44bC5Fb8851b3B");
+    _contractAddress=EthereumAddress.fromHex("0xaD24Fc1d8eC357C9d0B7Fe252AB8172e67F552C9");
   }
 
   Future<void> getCreadentials() async {
@@ -73,84 +73,33 @@ class NodeService {
     //await getNotes();
     print(_contract.address);
   }
-  Future<void> getUserName()async {
-
+  // state changing function
+  Future<String> callFunction(String funcname, List<dynamic> args, String privateKey) async {
+    EthPrivateKey credentials = EthPrivateKey.fromHex(privateKey);
+    DeployedContract contract = _contract;
+    final ethFunction = contract.function(funcname);
+    final result = await _client.sendTransaction(
+        credentials,
+        Transaction.callContract(
+          contract: contract,
+          function: ethFunction,
+          parameters: args,
+        ),
+        chainId: null,
+        fetchChainIdFromNetworkId: true);
+    return result;
   }
-  // Future<DeployedContract> loadContract() async {
-  //   String abi = await rootBundle.loadString('assets/abi.json');
-  //   String contractAddress = _contract.address.toString();
-  //   final contract = DeployedContract(ContractAbi.fromJson(abi, 'Election'), EthereumAddress.fromHex(contractAddress));
-  //   return contract;
-  // }
-  // getNotes() async {
-  //   List notesList = await _client
-  //       .call(contract: _contract, function: _notesCount, params: []);
-  //   BigInt totalNotes = notesList[0];
-  //   // noteCount = totalNotes.toInt();
-  //   // notes.clear();
-  //   // for (int i = 0; i < noteCount; i++) {
-  //   //   var temp = await _client.call(
-  //   //       contract: _contract, function: _notes, params: [BigInt.from(i)]);
-  //   //   if (temp[1] != "")
-  //   //     notes.add(
-  //   //       Note(
-  //   //         id: temp[0].toString(),
-  //   //         title: temp[1],
-  //   //         body: temp[2],
-  //   //         created:
-  //   //         DateTime.fromMillisecondsSinceEpoch(temp[3].toInt() * 1000),
-  //   //       ),
-  //   //     );
-  //   }
-  //   //isLoading = false;
-  //   // notifyListeners();
-  // }
-  //
-  // addNote(Note note) async {
-  //   isLoading = true;
-  //   notifyListeners();
-  //   await _client.sendTransaction(
-  //     _credentials,
-  //     Transaction.callContract(
-  //       contract: _contract,
-  //       function: _addNote,
-  //       parameters: [
-  //         note.title,
-  //         note.body,
-  //         BigInt.from(note.created.millisecondsSinceEpoch),
-  //       ],
-  //     ),
-  //   );
-  //   await getNotes();
-  // }
-  //
-  // deleteNote(int id) async {
-  //   isLoading = true;
-  //   notifyListeners();
-  //   await _client.sendTransaction(
-  //     _credentials,
-  //     Transaction.callContract(
-  //       contract: _contract,
-  //       function: _deleteeNote,
-  //       parameters: [BigInt.from(id)],
-  //     ),
-  //   );
-  //   await getNotes();
-  // }
-  //
-  // editNote(Note note) async {
-  //   isLoading = true;
-  //   notifyListeners();
-  //   print(BigInt.from(int.parse(note.id)));
-  //   await _client.sendTransaction(
-  //     _credentials,
-  //     Transaction.callContract(
-  //       contract: _contract,
-  //       function: _editNote,
-  //       parameters: [BigInt.from(int.parse(note.id)), note.title, note.body],
-  //     ),
-  //   );
-  //   await getNotes();
-  // }
+
+  //non state change function
+  Future<List<dynamic>> ask(String funcName, List<dynamic> args) async {
+    final contract = _contract;
+    final ethFunction = contract.function(funcName);
+    final result = _client.call(contract: contract, function: ethFunction, params: args);
+    return result;
+  }
+  Future<void> getUserName()async {
+var res= await ask("getUserName", []);
+print(res);
+  }
 
 }
