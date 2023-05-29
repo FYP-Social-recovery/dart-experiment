@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_js/flutter_js.dart';
+//import 'package:flutter_js/flutter_js.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:http/http.dart' as http;
 
 class NodeService {
   bool isLoading = true;
@@ -17,7 +18,7 @@ class NodeService {
   final String _wsUrl = "ws://127.0.0.1:7545";
 
   final String _privateKey =
-      "3d789a56b97933f50f9ea622a0ea95982823b2dcb6f248b58b5aff3872f247e7";
+      "cf616ab0ac08e4fc00766afa4e3a96e27d8359ea31b633eabbabd7dd679e7a43";
 
   late Web3Client _client;
   late String _abiCode;
@@ -58,7 +59,7 @@ class NodeService {
     _abiCode = jsonEncode(jsonAbi['abi']);
     // _contractAddress = EthereumAddress.fromHex(jsonAbi["networks"]["421613"]["address"]);
     _contractAddress =
-        EthereumAddress.fromHex("0xaD24Fc1d8eC357C9d0B7Fe252AB8172e67F552C9");
+        EthereumAddress.fromHex("0xBaB9A24e9Cf966Ad8B3Eb34D405234531B221E39");
   }
 
   Future<void> getCreadentials() async {
@@ -68,7 +69,7 @@ class NodeService {
   Future<void> getDeployedContract() async {
     _contract = DeployedContract(
         ContractAbi.fromJson(_abiCode, "Node"), _contractAddress);
-    print(_contract.address);
+    print("Node contract deployed "+_contract.address.toString());
   }
 
   // state changing function
@@ -98,6 +99,8 @@ class NodeService {
     return result;
   }
 
+
+  //function calling in node service 
   Future<void> getUserName() async {
     var res = await ask("getUserName", []);
     print(res);
@@ -116,7 +119,33 @@ class NodeService {
     print(res);
   }
 
-  //still in testing phase
+  Future<void> makeTransaction()async{
+    await _client.sendTransaction(
+      _credentials,
+      Transaction(
+        to: EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869'),
+        gasPrice: EtherAmount.inWei(BigInt.one),
+        maxGas: 100000,
+        value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1),
+      ),
+    );
+    print("transaction completed");
+  }
+
+  Future<void> deploy()async{
+    String url = "https://9b5c-112-134-27-69.ngrok-free.app/node-contract/deploy";
+    var map = new Map<String, dynamic>();
+    map['prv'] = '58d0efedba9a8a61b2ac3f188dd079782e07aed904cdbc0e3340e073e85c7655';
+    map['pub'] = '0x20543FD8D854d500121215Abc542531987f6bc2e';
+    final response = await http.post(Uri.parse(url),body: map);
+
+    var responseData = json.decode(response.body);
+    print(responseData);
+
+    return;
+  }
+
+//still in testing phase
   // Future<void> deploy() async {
   //   final prefs = await SharedPreferences.getInstance();
   //   //final privateKey = prefs.getString('3d789a56b97933f50f9ea622a0ea95982823b2dcb6f248b58b5aff3872f247e7') ?? '3d789a56b97933f50f9ea622a0ea95982823b2dcb6f248b58b5aff3872f247e7';

@@ -24,9 +24,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    TestServiceTwo testTwo=new TestServiceTwo();
-    PublicContract pc=new PublicContract();
-    NodeService ns=new NodeService();
+    TestServiceTwo testTwo= TestServiceTwo();
+    //PublicContract pc= PublicContract();
+    NodeService ns=NodeService();
+    PublicContractService ps = PublicContractService();
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
           child: Column(
             children: [
               Text("Page loaded"),
-              IconButton(onPressed: ()=>{ns.testDeploy()}, icon: Icon(Icons.face_rounded))
+              IconButton(onPressed: ()=>{ns.deploy()}, icon: Icon(Icons.face_rounded))
             ],
           ),
         ),
