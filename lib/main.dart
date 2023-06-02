@@ -47,7 +47,8 @@ class MyApp extends StatelessWidget {
           child: Column(
             children: [
               Text("Page loaded"),
-              IconButton(onPressed: ()=>{ns.deploy()}, icon: Icon(Icons.face_rounded))
+              IconButton(onPressed: ()=>{ns.checkRequestsForShare()}, icon: Icon(Icons.notification_add_rounded)),
+              IconButton(onPressed: ()=>{ns.releaseSecret()}, icon: Icon(Icons.notification_add_rounded))
             ],
           ),
         ),

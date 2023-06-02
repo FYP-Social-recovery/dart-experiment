@@ -68,7 +68,7 @@ class PublicContractService {
   Future<void> getDeployedContract() async {
     _contract = DeployedContract(
         ContractAbi.fromJson(_abiCode, "PublicContract"), _contractAddress);
-    print("contract deployed"+_contract.address.toString());
+    print("Public contract initiated "+_contract.address.toString());
   }
 
   // state changing function

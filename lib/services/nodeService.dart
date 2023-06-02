@@ -1,9 +1,16 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:encrypt/encrypt.dart';
+import 'dart:core';
+
+import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 //import 'package:flutter_js/flutter_js.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:http/http.dart' as http;
@@ -69,7 +76,7 @@ class NodeService {
   Future<void> getDeployedContract() async {
     _contract = DeployedContract(
         ContractAbi.fromJson(_abiCode, "Node"), _contractAddress);
-    print("Node contract deployed "+_contract.address.toString());
+    print("Node contract initiated  "+_contract.address.toString());
   }
 
   // state changing function
@@ -95,7 +102,9 @@ class NodeService {
     final contract = _contract;
     final ethFunction = contract.function(funcName);
     final result =
-        _client.call(contract: contract, function: ethFunction, params: args);
+        _client.call(
+            sender:_credentials.address ,
+            contract: contract, function: ethFunction, params: args);
     return result;
   }
 
@@ -106,7 +115,7 @@ class NodeService {
     print(res);
   }
 
-  Future<void> addTempShareHolder(String shareHolder) async {
+  Future<void> addTempShareHolder() async {
     var res = await callFunction(
         "addTemporaryShareHolders",
         [EthereumAddress.fromHex("0x7400cC042F87Acb0CbC973C9655F986DCD72B869")],
@@ -121,29 +130,174 @@ class NodeService {
 
   Future<void> makeTransaction()async{
     await _client.sendTransaction(
+
       _credentials,
       Transaction(
         to: EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869'),
         gasPrice: EtherAmount.inWei(BigInt.one),
         maxGas: 100000,
-        value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1),
+        value: EtherAmount.fromUnitAndValue(EtherUnit.wei, 1),
       ),
+      chainId: 5
     );
     print("transaction completed");
   }
 
   Future<void> deploy()async{
-    String url = "https://9b5c-112-134-27-69.ngrok-free.app/node-contract/deploy";
+    String url = "https://6f75-112-134-24-139.ngrok-free.app/node-contract/deploy";
     var map = new Map<String, dynamic>();
     map['prv'] = '58d0efedba9a8a61b2ac3f188dd079782e07aed904cdbc0e3340e073e85c7655';
     map['pub'] = '0x20543FD8D854d500121215Abc542531987f6bc2e';
-    final response = await http.post(Uri.parse(url),body: map);
-
+    var uri = Uri.https('6f75-112-134-24-139.ngrok-free.app', 'node-contract/deploy');
+    final response = await http.post(uri,body: map);
+    print(response);
     var responseData = json.decode(response.body);
     print(responseData);
 
     return;
   }
+
+  Future<void> register()async{
+    var res = await callFunction(
+        "registerToPublicContract",
+        ["Alice"],
+        _privateKey);
+    print(res);
+
+    return;
+  }
+  Future<void> makeHolderRequests()async{
+    var res = await callFunction(
+        "makingHolderRequests",
+        [],
+        _privateKey);
+    print(res);
+
+    return;
+  }
+  Future<void> addShares()async{
+    var res = await callFunction(
+        "addMyShares",
+        [["Share1","Share2","Share3"]],
+        _privateKey);
+    print(res);
+    return;
+  }
+  Future<void> refreshStatus()async{
+    var res = await callFunction(
+        "refreshState",
+        [],
+        _privateKey);
+    print(res);
+    return;
+  }
+  Future<void> getState() async {
+    // var res = await ask("getMyState", []);
+    // print(res);
+    var res = await ask(
+        "getMyState",
+        [],
+        //_privateKey
+    );
+    print(res);
+    return;
+  }
+  Future<void> getShareHolderStatus()async{
+    var requestdHolders = await ask(
+        "getRequestedShareHolders",
+        [],
+        //_privateKey
+    );
+    //var real=_client.getTransactionByHash(requestdHolders);
+
+
+
+    print(requestdHolders);
+    var acceptedHolders = await ask(
+        "getShareHolders",
+        [],
+        //_privateKey
+    );
+    print(acceptedHolders);
+    var rejectedHolders  = await ask(
+        "getRejectedShareHolders",
+        [],
+        //_privateKey
+    );
+    print(rejectedHolders);
+    return;
+  }
+
+
+  Future<void> distribute()async{
+    var res = await callFunction(
+        "distribute",
+        ["email","vaultHash"],
+        _privateKey);
+    print(res);
+    return;
+  }
+  Uint8List hexToBytes(String hexStr) {
+    final bytes = hex.decode(strip0x(hexStr));
+    if (bytes is Uint8List) return bytes;
+
+    return Uint8List.fromList(bytes);
+  }
+  Future<void> requestForShares()async{
+    // Uint8List vBytes = Uint8List.fromList([12]);
+    // Uint8List rBytes = Uint8List.fromList(hexToBytes("r"));
+    var res = await callFunction(
+        "requestSharesFromHolders",
+        ["string memory name",Uint8List(10), Uint8List(10), Uint8List(10),Uint8List(10),Uint8List(10)],
+        _privateKey);
+    print(res);
+
+    var result = await callFunction(
+        "setRequester",
+        [EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869')],
+        _privateKey);
+    print(result);
+    return;
+  }
+
+  Future<void> acceptInvitation()async{
+    var res = await callFunction(
+        "acceptInvitation",
+        [EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869')],
+        _privateKey);
+    print(res);
+    return;
+  }
+  Future<void> rejectInvitation()async{
+    var res = await callFunction(
+        "rejectInvitation",
+        [EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869')],
+        _privateKey);
+    print(res);
+    return;
+  }
+
+  Future<void> checkRequestsForShare()async{
+    var requesters = await ask(
+      "checkRequestsForShare",
+      [],
+      //_privateKey
+    );
+    print(requesters);
+
+    return;
+  }
+  Future<void> releaseSecret()async{
+    var res = await callFunction(
+        "releaseSecret",
+        [EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869')],
+        _privateKey);
+    print(res);
+    return;
+
+
+  }
+
 
 //still in testing phase
   // Future<void> deploy() async {
