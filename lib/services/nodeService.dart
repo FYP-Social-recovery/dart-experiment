@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:encrypt/encrypt.dart';
+import 'package:encrypt/encrypt.dart' as encrypt;
 import 'dart:core';
 
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 //import 'package:flutter_js/flutter_js.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -76,7 +78,7 @@ class NodeService {
   Future<void> getDeployedContract() async {
     _contract = DeployedContract(
         ContractAbi.fromJson(_abiCode, "Node"), _contractAddress);
-    print("Node contract initiated  "+_contract.address.toString());
+    print("Node contract initiated  " + _contract.address.toString());
   }
 
   // state changing function
@@ -101,19 +103,19 @@ class NodeService {
   Future<List<dynamic>> ask(String funcName, List<dynamic> args) async {
     final contract = _contract;
     final ethFunction = contract.function(funcName);
-    final result =
-        _client.call(
-            sender:_credentials.address ,
-            contract: contract, function: ethFunction, params: args);
+    final result = _client.call(
+        sender: _credentials.address,
+        contract: contract,
+        function: ethFunction,
+        params: args);
     return result;
   }
 
-
-  //function calling in node service 
-  Future<void> getUserName() async {
-    var res = await ask("getUserName", []);
-    print(res);
-  }
+  // //function calling in node service
+  // Future<void> getUserName() async {
+  //   var res = await ask("getUserName", []);
+  //   print(res);
+  // }
 
   Future<void> addTempShareHolder() async {
     var res = await callFunction(
@@ -128,28 +130,30 @@ class NodeService {
     print(res);
   }
 
-  Future<void> makeTransaction()async{
+  Future<void> makeTransaction() async {
     await _client.sendTransaction(
-
-      _credentials,
-      Transaction(
-        to: EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869'),
-        gasPrice: EtherAmount.inWei(BigInt.one),
-        maxGas: 100000,
-        value: EtherAmount.fromUnitAndValue(EtherUnit.wei, 1),
-      ),
-      chainId: 5
-    );
+        _credentials,
+        Transaction(
+          to: EthereumAddress.fromHex(
+              '0x7400cC042F87Acb0CbC973C9655F986DCD72B869'),
+          gasPrice: EtherAmount.inWei(BigInt.one),
+          maxGas: 100000,
+          value: EtherAmount.fromUnitAndValue(EtherUnit.wei, 1),
+        ),
+        chainId: 5);
     print("transaction completed");
   }
 
-  Future<void> deploy()async{
-    String url = "https://6f75-112-134-24-139.ngrok-free.app/node-contract/deploy";
+  Future<void> deploy() async {
+    String url =
+        "https://6f75-112-134-24-139.ngrok-free.app/node-contract/deploy";
     var map = new Map<String, dynamic>();
-    map['prv'] = '58d0efedba9a8a61b2ac3f188dd079782e07aed904cdbc0e3340e073e85c7655';
+    map['prv'] =
+        '58d0efedba9a8a61b2ac3f188dd079782e07aed904cdbc0e3340e073e85c7655';
     map['pub'] = '0x20543FD8D854d500121215Abc542531987f6bc2e';
-    var uri = Uri.https('6f75-112-134-24-139.ngrok-free.app', 'node-contract/deploy');
-    final response = await http.post(uri,body: map);
+    var uri =
+        Uri.https('6f75-112-134-24-139.ngrok-free.app', 'node-contract/deploy');
+    final response = await http.post(uri, body: map);
     print(response);
     var responseData = json.decode(response.body);
     print(responseData);
@@ -157,110 +161,127 @@ class NodeService {
     return;
   }
 
-  Future<void> register()async{
-    var res = await callFunction(
-        "registerToPublicContract",
-        ["Alice"],
-        _privateKey);
+  // Future<void> register()async{
+  //   var res = await callFunction(
+  //       "registerToPublicContract",
+  //       ["Alice"],
+  //       _privateKey);
+  //   print(res);
+  //
+  //   return;
+  // }
+  Future<void> makeHolderRequests() async {
+    var res = await callFunction("makingHolderRequests", [], _privateKey);
     print(res);
 
     return;
   }
-  Future<void> makeHolderRequests()async{
-    var res = await callFunction(
-        "makingHolderRequests",
-        [],
-        _privateKey);
-    print(res);
 
-    return;
-  }
-  Future<void> addShares()async{
+  Future<void> addShares() async {
     var res = await callFunction(
         "addMyShares",
-        [["Share1","Share2","Share3"]],
+        [
+          ["Share1", "Share2", "Share3"]
+        ],
         _privateKey);
     print(res);
     return;
   }
-  Future<void> refreshStatus()async{
-    var res = await callFunction(
-        "refreshState",
-        [],
-        _privateKey);
+
+  Future<void> refreshStatus() async {
+    var res = await callFunction("refreshState", [], _privateKey);
     print(res);
     return;
   }
+
   Future<void> getState() async {
     // var res = await ask("getMyState", []);
     // print(res);
     var res = await ask(
-        "getMyState",
-        [],
-        //_privateKey
+      "getMyState",
+      [],
+      //_privateKey
     );
     print(res);
     return;
   }
-  Future<void> getShareHolderStatus()async{
+
+  Future<void> getShareHolderStatus() async {
     var requestdHolders = await ask(
-        "getRequestedShareHolders",
-        [],
-        //_privateKey
+      "getRequestedShareHolders",
+      [],
+      //_privateKey
     );
     //var real=_client.getTransactionByHash(requestdHolders);
 
-
-
     print(requestdHolders);
     var acceptedHolders = await ask(
-        "getShareHolders",
-        [],
-        //_privateKey
+      "getShareHolders",
+      [],
+      //_privateKey
     );
     print(acceptedHolders);
-    var rejectedHolders  = await ask(
-        "getRejectedShareHolders",
-        [],
-        //_privateKey
+    var rejectedHolders = await ask(
+      "getRejectedShareHolders",
+      [],
+      //_privateKey
     );
     print(rejectedHolders);
     return;
   }
 
-
-  Future<void> distribute()async{
-    var res = await callFunction(
-        "distribute",
-        ["email","vaultHash"],
-        _privateKey);
+  Future<void> distribute() async {
+    var res =
+        await callFunction("distribute", ["email", "vaultHash"], _privateKey);
     print(res);
     return;
   }
+
   Uint8List hexToBytes(String hexStr) {
     final bytes = hex.decode(strip0x(hexStr));
     if (bytes is Uint8List) return bytes;
 
     return Uint8List.fromList(bytes);
   }
-  Future<void> requestForShares()async{
-    // Uint8List vBytes = Uint8List.fromList([12]);
-    // Uint8List rBytes = Uint8List.fromList(hexToBytes("r"));
-    var res = await callFunction(
-        "requestSharesFromHolders",
-        ["string memory name",Uint8List(10), Uint8List(10), Uint8List(10),Uint8List(10),Uint8List(10)],
-        _privateKey);
-    print(res);
 
-    var result = await callFunction(
-        "setRequester",
-        [EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869')],
-        _privateKey);
-    print(result);
+  // Future<void> requestForShares()async{
+  //   // Uint8List vBytes = Uint8List.fromList([12]);
+  //   // Uint8List rBytes = Uint8List.fromList(hexToBytes("r"));
+  //   var res = await callFunction(
+  //       "requestSharesFromHolders",
+  //       ["string memory name",Uint8List(10), Uint8List(10), Uint8List(10),Uint8List(10),Uint8List(10)],
+  //       _privateKey);
+  //   print(res);
+  //
+  //   var result = await callFunction(
+  //       "setRequester",
+  //       [EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869')],
+  //       _privateKey);
+  //   print(result);
+  //   return;
+  // }
+  Future<void> requestForShares() async {
+    String url =
+        "https://6f75-112-134-24-139.ngrok-free.app/node-contract/deploy";
+    var map = new Map<String, dynamic>();
+    map['prv'] =
+        'ec754553254fd6b9bcfa929e27d378b648b4ac8adf926b0663e41e13c03c174d';
+    map['pub'] = '0x1c36c98DC9b260564F17817241fED3BBA1402059';
+    map['contract'] = '0x6fe32ACEEaf2300C46Eb48E1DB07d0924d30baBB';
+    map['username'] = 'Tim';
+    map['generatedOTP'] = '123';
+    map['enteredOTP'] = '123';
+    var uri = Uri.https('6f75-112-134-24-139.ngrok-free.app',
+        'node-contract/request-vault-hash');
+    final response = await http.post(uri, body: map);
+    print(response);
+    var responseData = json.decode(response.body);
+    print(responseData);
+
     return;
   }
 
-  Future<void> acceptInvitation()async{
+  Future<void> acceptInvitation() async {
     var res = await callFunction(
         "acceptInvitation",
         [EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869')],
@@ -268,7 +289,8 @@ class NodeService {
     print(res);
     return;
   }
-  Future<void> rejectInvitation()async{
+
+  Future<void> rejectInvitation() async {
     var res = await callFunction(
         "rejectInvitation",
         [EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869')],
@@ -277,7 +299,7 @@ class NodeService {
     return;
   }
 
-  Future<void> checkRequestsForShare()async{
+  Future<void> checkRequestsForShare() async {
     var requesters = await ask(
       "checkRequestsForShare",
       [],
@@ -287,17 +309,54 @@ class NodeService {
 
     return;
   }
-  Future<void> releaseSecret()async{
+
+  Future<void> releaseSecret() async {
     var res = await callFunction(
         "releaseSecret",
         [EthereumAddress.fromHex('0x7400cC042F87Acb0CbC973C9655F986DCD72B869')],
         _privateKey);
     print(res);
     return;
-
-
   }
 
+  Future<List<int>> convertImageToBytes(File imageFile) async {
+    return imageFile.readAsBytesSync();
+  }
+
+  String encryptImage(List<int> imageData) {
+    final key = encrypt.Key.fromUtf8(
+        'YourEncryptionKey'); // Replace with your encryption key
+    final iv = IV.fromLength(16);
+
+    final encrypter = Encrypter(AES(key));
+
+    final encrypted = encrypter.encryptBytes(imageData, iv: iv);
+
+    return encrypted.base64;
+  }
+
+  Future<void> sendEncryptedImage() async {
+    File imageFile = File("C:/Users/Sandaru Kaveesha/Pictures/cover3.jpg");
+    // var uri = Uri.https('5a6d-112-134-24-231.ngrok-free.app', 'node-contract/get-fingerprint');
+    // final response = await http.post(uri);
+    final imageData = await convertImageToBytes(imageFile);
+    print(imageData);
+    final encryptedImage = encryptImage(imageData);
+    print(encryptedImage);
+    // var request = http.MultipartRequest('POST', Uri.parse(' https://5a6d-112-134-24-231.ngrok-free.app/node-contract/get-fingerprint'));
+    //
+    // request.fields['image'] = encryptedImage;
+    //
+    // // Add any additional data or headers if required
+    // request.fields['key'] = 'value';
+    //
+    // var response = await request.send();
+    // if (response.statusCode == 200) {
+    //   // Success
+    // } else {
+    //   // Handle error
+    // }
+  }
 
 //still in testing phase
   // Future<void> deploy() async {
@@ -337,4 +396,185 @@ class NodeService {
   //
   //   print(int.parse(jsEvalResult.stringResult));
   // }
+
+  Future<bool> register(String publicKey, String privateKey, String username,
+      String contractAddress) async {
+    try {
+      var uri = Uri.https(
+          'https://2ad0-2401-dd00-10-20-9cf0-c065-e15e-3429.ngrok-free.app',
+          'node-contract/deploy');
+
+      var map = new Map<String, dynamic>();
+      map['publicKey'] = publicKey;
+      map['privateKey'] = privateKey;
+      map['username'] = username;
+      map['contractAddress'] = contractAddress;
+
+      final response = await http.post(uri, body: map);
+
+      if (response.statusCode == 200) {
+        bool userNameExistence = json.decode(response.body)["result"];
+        return userNameExistence;
+      }
+    } catch (e) {
+      print(e.toString());
+      return false;
+    }
+    return false;
+  }
+
+  Future<String> generateMnemonicForNewAccount() async {
+    try {
+      var uri = Uri.https(
+          'https://2ad0-2401-dd00-10-20-9cf0-c065-e15e-3429.ngrok-free.app',
+          'key-generation/generateMnemonicForNewAccount');
+
+      var map = new Map<String, dynamic>();
+      // map['publicKey'] = publicKey;
+      // map['privateKey'] = privateKey;
+      // map['username'] = username;
+      // map['contractAddress'] = contractAddress;
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        String mnemonic = json.decode(response.body)["result"];
+        return mnemonic;
+      }
+    } catch (e) {
+      print(e.toString());
+      return "false";
+    }
+    return "false";
+  }
+
+  Future<List<String>> importWalletFromMnemonic(String mnemonic) async {
+    try {
+      var uri = Uri.https(
+          'https://2ad0-2401-dd00-10-20-9cf0-c065-e15e-3429.ngrok-free.app',
+          'key-generation/import-wallet-from-mnemonic');
+
+      var map = new Map<String, dynamic>();
+      map['mnemonic'] = mnemonic;
+      //map['privateKey'] = privateKey;
+      // map['username'] = username;
+      // map['contractAddress'] = contractAddress;
+
+      final response = await http.post(uri, body: map);
+
+      if (response.statusCode == 200) {
+        List<String> prv_pub = json.decode(response.body)["result"];
+        return prv_pub;
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+    return [];
+  }
+
+  Future<String> mnemonicToEntropy(String mnemonic) async {
+    try {
+      var uri = Uri.https(
+          'https://2ad0-2401-dd00-10-20-9cf0-c065-e15e-3429.ngrok-free.app',
+          'key-generation/mnemonic-to-entropy');
+
+      var map = new Map<String, dynamic>();
+      map['mnemonic'] = mnemonic;
+      //map['privateKey'] = privateKey;
+      // map['username'] = username;
+      // map['contractAddress'] = contractAddress;
+
+      final response = await http.post(uri, body: map);
+
+      if (response.statusCode == 200) {
+        String entropy = json.decode(response.body)["result"];
+        return entropy;
+      }
+    } catch (e) {
+      print(e.toString());
+
+    }
+    return "false";
+  }
+  Future<String> getContractAddressByPublicAddress(String publicKey,String privateKey) async {
+    try {
+      var uri = Uri.https(
+          'https://2ad0-2401-dd00-10-20-9cf0-c065-e15e-3429.ngrok-free.app',
+          'public-contract/get-contract-address-by-public-address');
+
+      var map = new Map<String, dynamic>();
+      map['publicKey'] = publicKey;
+      map['privateKey'] = privateKey;
+      // map['username'] = username;
+      // map['contractAddress'] = contractAddress;
+
+      final response = await http.post(uri, body: map);
+
+      if (response.statusCode == 200) {
+        String entropy = json.decode(response.body)["result"];
+        return entropy;
+      }
+    } catch (e) {
+      print(e.toString());
+
+    }
+    return "false";
+  }
+
+  Future<String> getUserName(String publicKey,String privateKey) async {
+    try {
+      var uri = Uri.https(
+          'https://2ad0-2401-dd00-10-20-9cf0-c065-e15e-3429.ngrok-free.app',
+          'node-contract/user-name');
+
+      var map = new Map<String, dynamic>();
+      map['publicKey'] = publicKey;
+      map['privateKey'] = privateKey;
+      // map['username'] = username;
+      // map['contractAddress'] = contractAddress;
+
+      final response = await http.post(uri, body: map);
+
+      if (response.statusCode == 200) {
+        String entropy = json.decode(response.body)["result"];
+        return entropy;
+      }
+    } catch (e) {
+      print(e.toString());
+
+    }
+    return "false";
+  }
+  Future<bool> checkUserExists(String publicKey,String privateKey) async {
+    try {
+      var uri = Uri.https(
+          'https://2ad0-2401-dd00-10-20-9cf0-c065-e15e-3429.ngrok-free.app',
+          'public-contract/check-user-exists');
+
+      var map = new Map<String, dynamic>();
+      map['publicKey'] = publicKey;
+      map['privateKey'] = privateKey;
+      // map['username'] = username;
+      // map['contractAddress'] = contractAddress;
+
+      final response = await http.post(uri, body: map);
+
+      if (response.statusCode == 200) {
+        bool existance = json.decode(response.body)["result"];
+        return existance;
+      }
+    } catch (e) {
+      print(e.toString());
+
+    }
+    return false;
+  }
+// generateMnemonicForNewAccount
+// importWalletFromMnemonic
+// mnemonicToEntropy
+// getContractAddressByPublicAddress
+// getUserName
+// checkUserExists
+// deploy
+// register
 }
